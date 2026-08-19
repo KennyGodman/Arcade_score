@@ -1,4 +1,3 @@
-# { "Depends": "py-genlayer:0.1.0" }
 from genlayer import *
 
 class ArcadeScoreOracle(gl.Contract):
@@ -23,10 +22,11 @@ class ArcadeScoreOracle(gl.Contract):
         self.replay_count = u256(0)
 
     @gl.public.view
-    def get_high_score(self, player: str) -> u256:
+    def get_high_score(self, player: str) -> int:
         """Returns the verified personal high score for a given player address string."""
         player_addr = Address(player)
-        return self.high_scores.get(player_addr, u256(0))
+        score = self.high_scores.get(player_addr, u256(0))
+        return int(score)
 
     @gl.public.view
     def is_replay_verified(self, replay_id: str) -> bool:
@@ -34,14 +34,15 @@ class ArcadeScoreOracle(gl.Contract):
         return self.verified_replays.get(replay_id, False)
 
     @gl.public.view
-    def get_replay_score(self, replay_id: str) -> u256:
+    def get_replay_score(self, replay_id: str) -> int:
         """Returns the score associated with a verified replay ID."""
-        return self.replay_scores.get(replay_id, u256(0))
+        score = self.replay_scores.get(replay_id, u256(0))
+        return int(score)
 
     @gl.public.view
-    def get_total_replays(self) -> u256:
+    def get_total_replays(self) -> int:
         """Returns the total number of submitted replay logs."""
-        return self.replay_count
+        return int(self.replay_count)
 
     @gl.public.view
     def get_owner(self) -> str:
@@ -49,7 +50,7 @@ class ArcadeScoreOracle(gl.Contract):
         return str(self.owner)
 
     @gl.public.write
-    def submit_score(self, player: str, claimed_score: u256, replay_log: str) -> bool:
+    def submit_score(self, player: str, claimed_score: int, replay_log: str) -> bool:
         """
         Submits a game score along with replay telemetry log.
         
@@ -59,7 +60,7 @@ class ArcadeScoreOracle(gl.Contract):
         """
         player_addr = Address(player)
         current_replay_id = f"replay_{player}_{self.replay_count}"
-        target_score = int(claimed_score)
+        target_score = claimed_score
         log_data = replay_log
 
         # Non-deterministic function definition

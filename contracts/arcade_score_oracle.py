@@ -15,18 +15,18 @@ class ArcadeScoreOracle(gl.Contract):
     replay_scores: TreeMap[str, u256]
     replay_count: u256
 
-    def __init__(self):
-        # Automatically sets contract deployer as owner
-        self.owner = gl.message.sender_address
+    def __init__(self, owner: str = "0x0000000000000000000000000000000000000000"):
+        self.owner = Address(owner)
         self.high_scores = TreeMap()
         self.verified_replays = TreeMap()
         self.replay_scores = TreeMap()
         self.replay_count = u256(0)
 
     @gl.public.view
-    def get_high_score(self, player: Address) -> u256:
-        """Returns the verified personal high score for a given player address."""
-        return self.high_scores.get(player, u256(0))
+    def get_high_score(self, player: str) -> u256:
+        """Returns the verified personal high score for a given player address string."""
+        player_addr = Address(player)
+        return self.high_scores.get(player_addr, u256(0))
 
     @gl.public.view
     def is_replay_verified(self, replay_id: str) -> bool:
@@ -44,12 +44,12 @@ class ArcadeScoreOracle(gl.Contract):
         return self.replay_count
 
     @gl.public.view
-    def get_owner(self) -> Address:
-        """Returns the contract owner address."""
-        return self.owner
+    def get_owner(self) -> str:
+        """Returns the contract owner address as string."""
+        return str(self.owner)
 
     @gl.public.write
-    def submit_score(self, player: Address, claimed_score: u256, replay_log: str) -> bool:
+    def submit_score(self, player: str, claimed_score: u256, replay_log: str) -> bool:
         """
         Submits a game score along with replay telemetry log.
         
@@ -57,7 +57,7 @@ class ArcadeScoreOracle(gl.Contract):
         to judge whether the replay log exhibits valid human gameplay, consistent
         physics/timestamps, and plausible score generation.
         """
-        # Copy persistent state into local variables before non-deterministic execution
+        player_addr = Address(player)
         current_replay_id = f"replay_{player}_{self.replay_count}"
         target_score = int(claimed_score)
         log_data = replay_log
@@ -114,9 +114,9 @@ class ArcadeScoreOracle(gl.Contract):
             self.verified_replays[current_replay_id] = True
             self.replay_scores[current_replay_id] = verified_score
             
-            current_high = self.high_scores.get(player, u256(0))
+            current_high = self.high_scores.get(player_addr, u256(0))
             if verified_score > current_high:
-                self.high_scores[player] = verified_score
+                self.high_scores[player_addr] = verified_score
             return True
         else:
             self.verified_replays[current_replay_id] = False

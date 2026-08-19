@@ -9,16 +9,16 @@ class ArcadeScoreOracle(gl.Contract):
     Equivalence Principle with AI-driven anti-cheat telemetry analysis.
     """
     owner: Address
-    high_scores: dict[Address, int]
-    verified_replays: dict[str, bool]
-    replay_scores: dict[str, int]
+    high_scores: TreeMap[Address, int]
+    verified_replays: TreeMap[str, bool]
+    replay_scores: TreeMap[str, int]
     replay_count: int
 
     def __init__(self, owner: Address):
         self.owner = owner
-        self.high_scores = {}
-        self.verified_replays = {}
-        self.replay_scores = {}
+        self.high_scores = TreeMap()
+        self.verified_replays = TreeMap()
+        self.replay_scores = TreeMap()
         self.replay_count = 0
 
     @gl.public.view

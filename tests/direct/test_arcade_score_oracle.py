@@ -30,9 +30,13 @@ except ImportError:
             # Direct test harness mock execution
             return fn()
 
+    class MockTreeMap(dict):
+        pass
+
     class MockGl:
         Contract = MockContract
         Address = MockAddress
+        TreeMap = MockTreeMap
         public = MockPublic
         eq_principle = MockEqPrinciple
         

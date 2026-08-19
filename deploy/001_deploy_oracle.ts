@@ -19,11 +19,11 @@ async function deployArcadeScoreOracle() {
   const contractPath = path.join(__dirname, "../contracts/arcade_score_oracle.py");
   const contractCode = fs.readFileSync(contractPath, "utf-8");
 
-  // Deploy contract with constructor arguments
+  // Deploy contract (constructor auto-sets owner to gl.message.sender_address)
   const deployTx = await client.deployContract({
     account,
     code: contractCode,
-    args: [account.address],
+    args: [],
   });
 
   console.log(`ArcadeScoreOracle deployed successfully at address: ${deployTx.contractAddress}`);

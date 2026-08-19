@@ -8,15 +8,16 @@ class ArcadeScoreOracle(gl.Contract):
     Verifies arcade game score submissions and replay logs using GenLayer's
     Equivalence Principle with AI-driven anti-cheat telemetry analysis.
     """
-    # --- Persistent On-Chain State (Uses u256 & TreeMap) ---
+    # --- Persistent On-Chain State ---
     owner: Address
     high_scores: TreeMap[Address, u256]
     verified_replays: TreeMap[str, bool]
     replay_scores: TreeMap[str, u256]
     replay_count: u256
 
-    def __init__(self, owner: Address):
-        self.owner = owner
+    def __init__(self):
+        # Automatically sets contract deployer as owner
+        self.owner = gl.message.sender_address
         self.high_scores = TreeMap()
         self.verified_replays = TreeMap()
         self.replay_scores = TreeMap()

@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, patch
 try:
     import genlayer as gl
 except ImportError:
-    # Create lightweight mock layer for testing contract logic locally
     class MockAddress(str):
         pass
 
@@ -27,7 +26,6 @@ except ImportError:
     class MockEqPrinciple:
         @staticmethod
         def prompt_non_comparative(fn, task, criteria):
-            # Direct test harness mock execution
             return fn()
 
     class MockTreeMap(dict):
@@ -36,6 +34,9 @@ except ImportError:
     class MockU256(int):
         pass
 
+    class MockMessage:
+        sender_address = MockAddress("0x1111111111111111111111111111111111111111")
+
     class MockGl:
         Contract = MockContract
         Address = MockAddress
@@ -43,6 +44,7 @@ except ImportError:
         u256 = MockU256
         public = MockPublic
         eq_principle = MockEqPrinciple
+        message = MockMessage()
         
         @staticmethod
         def exec_prompt(prompt: str) -> dict:
@@ -68,17 +70,16 @@ def test_contract_initialization():
     owner_addr = "0x1111111111111111111111111111111111111111"
     player_addr = "0x2222222222222222222222222222222222222222"
     
-    oracle = ArcadeScoreOracle(owner=owner_addr)
+    oracle = ArcadeScoreOracle()
     
     assert oracle.get_owner() == owner_addr
     assert oracle.get_high_score(player_addr) == 0
     assert oracle.get_total_replays() == 0
 
 def test_submit_valid_score():
-    owner_addr = "0x1111111111111111111111111111111111111111"
     player_addr = "0x2222222222222222222222222222222222222222"
     
-    oracle = ArcadeScoreOracle(owner=owner_addr)
+    oracle = ArcadeScoreOracle()
     
     valid_log = "FRAME 0: START; FRAME 60: MOVE_RIGHT; FRAME 120: SHOOT; SCORE: 15000"
     
@@ -91,10 +92,9 @@ def test_submit_valid_score():
     assert oracle.get_replay_score(f"replay_{player_addr}_0") == 15000
 
 def test_submit_cheated_score():
-    owner_addr = "0x1111111111111111111111111111111111111111"
     player_addr = "0x3333333333333333333333333333333333333333"
     
-    oracle = ArcadeScoreOracle(owner=owner_addr)
+    oracle = ArcadeScoreOracle()
     
     cheated_log = "IMPOSSIBLE_CHEATING_LOG: FRAME 0: SCORE 99999999"
     
@@ -106,10 +106,9 @@ def test_submit_cheated_score():
     assert oracle.is_replay_verified(f"replay_{player_addr}_0") is False
 
 def test_high_score_updates_only_on_improvement():
-    owner_addr = "0x1111111111111111111111111111111111111111"
     player_addr = "0x4444444444444444444444444444444444444444"
     
-    oracle = ArcadeScoreOracle(owner=owner_addr)
+    oracle = ArcadeScoreOracle()
     
     # First submit score 15000
     valid_log_1 = "LOG 1"

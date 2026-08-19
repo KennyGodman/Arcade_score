@@ -33,10 +33,14 @@ except ImportError:
     class MockTreeMap(dict):
         pass
 
+    class MockU256(int):
+        pass
+
     class MockGl:
         Contract = MockContract
         Address = MockAddress
         TreeMap = MockTreeMap
+        u256 = MockU256
         public = MockPublic
         eq_principle = MockEqPrinciple
         

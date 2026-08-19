@@ -1,3 +1,4 @@
+# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
 from genlayer import *
 
 class ArcadeScoreOracle(gl.Contract):
@@ -7,26 +8,23 @@ class ArcadeScoreOracle(gl.Contract):
     Verifies arcade game score submissions and replay logs using GenLayer's
     Equivalence Principle with AI-driven anti-cheat telemetry analysis.
     """
-    # --- Persistent On-Chain State ---
     owner: Address
-    high_scores: TreeMap[Address, u256]
+    high_scores: TreeMap[str, int]
     verified_replays: TreeMap[str, bool]
-    replay_scores: TreeMap[str, u256]
-    replay_count: u256
+    replay_scores: TreeMap[str, int]
+    replay_count: int
 
-    def __init__(self, owner: str = "0x0000000000000000000000000000000000000000"):
-        self.owner = Address(owner)
+    def __init__(self):
+        self.owner = gl.message.sender_address
         self.high_scores = TreeMap()
         self.verified_replays = TreeMap()
         self.replay_scores = TreeMap()
-        self.replay_count = u256(0)
+        self.replay_count = 0
 
     @gl.public.view
     def get_high_score(self, player: str) -> int:
         """Returns the verified personal high score for a given player address string."""
-        player_addr = Address(player)
-        score = self.high_scores.get(player_addr, u256(0))
-        return int(score)
+        return self.high_scores.get(player, 0)
 
     @gl.public.view
     def is_replay_verified(self, replay_id: str) -> bool:
@@ -36,13 +34,12 @@ class ArcadeScoreOracle(gl.Contract):
     @gl.public.view
     def get_replay_score(self, replay_id: str) -> int:
         """Returns the score associated with a verified replay ID."""
-        score = self.replay_scores.get(replay_id, u256(0))
-        return int(score)
+        return self.replay_scores.get(replay_id, 0)
 
     @gl.public.view
     def get_total_replays(self) -> int:
         """Returns the total number of submitted replay logs."""
-        return int(self.replay_count)
+        return self.replay_count
 
     @gl.public.view
     def get_owner(self) -> str:
@@ -58,7 +55,6 @@ class ArcadeScoreOracle(gl.Contract):
         to judge whether the replay log exhibits valid human gameplay, consistent
         physics/timestamps, and plausible score generation.
         """
-        player_addr = Address(player)
         current_replay_id = f"replay_{player}_{self.replay_count}"
         target_score = claimed_score
         log_data = replay_log
@@ -102,22 +98,22 @@ class ArcadeScoreOracle(gl.Contract):
         )
 
         # Update contract state deterministically after consensus
-        self.replay_count += u256(1)
+        self.replay_count += 1
         
         is_legitimate = False
-        verified_score = u256(0)
+        verified_score = 0
 
         if isinstance(judgment, dict):
             is_legitimate = bool(judgment.get("is_legitimate", False))
-            verified_score = u256(int(judgment.get("verified_score", 0)))
+            verified_score = int(judgment.get("verified_score", 0))
 
-        if is_legitimate and verified_score > u256(0):
+        if is_legitimate and verified_score > 0:
             self.verified_replays[current_replay_id] = True
             self.replay_scores[current_replay_id] = verified_score
             
-            current_high = self.high_scores.get(player_addr, u256(0))
+            current_high = self.high_scores.get(player, 0)
             if verified_score > current_high:
-                self.high_scores[player_addr] = verified_score
+                self.high_scores[player] = verified_score
             return True
         else:
             self.verified_replays[current_replay_id] = False
